@@ -1,4 +1,4 @@
-# Flysystem adapter for Yandex Disk API
+# Flysystem adapter for the Yandex Disk API
 
 ## Installation
 
