@@ -25,19 +25,20 @@ use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use League\MimeTypeDetection\MimeTypeDetector;
+use League\Flysystem\WhitespacePathNormalizer;
 
 class YandexDiskAdapter implements FilesystemAdapter
 {
     protected $mimeTypeDetector;
 
-    private WhitespacePathNormalizer $pathNormalizer;
+    private WhitespacePathNormalizer $normalizer;
 
     public function __construct(
         private Client $client,
         MimeTypeDetector $mimeTypeDetector = null
     ) {
         $this->mimeTypeDetector = $mimeTypeDetector ?: new FinfoMimeTypeDetector();
-        $this->pathNormalizer = new WhitespacePathNormalizer();
+        $this->normalizer = new WhitespacePathNormalizer();
     }
 
     /**
@@ -46,12 +47,12 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function fileExists(string $path): bool
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         try {
             $this->client->listContent($path, ['_embedded.items.path']);
             return true;
-        } catch (BadRequestException|UnableToCheckFileExistence $e) {
+        } catch (BadRequestException | UnableToCheckFileExistence $e) {
             return false;
         }
     }
@@ -73,7 +74,7 @@ class YandexDiskAdapter implements FilesystemAdapter
     {
         //        $contents = Utils::tryFopen($path, 'r');
 
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         $this->writeStream($path, $contents, $config);
     }
@@ -84,7 +85,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function writeStream(string $path, $contents, Config $config): void
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         try {
             $this->client->upload($path, $contents, true);
@@ -99,7 +100,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function read(string $path): string
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         try {
             $resource = $this->readStream($path);
@@ -119,7 +120,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function readStream(string $path)
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         try {
             $location = $this->client->getDownloadUrl($path, ['href']);
@@ -137,7 +138,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function delete(string $path): void
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         try {
             $this->client->remove($path);
@@ -152,7 +153,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function deleteDirectory(string $path): void
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         try {
             $this->client->remove($path);
@@ -167,7 +168,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function createDirectory(string $path, Config $config): void
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         try {
             $this->client->addDirectory($path);
@@ -191,7 +192,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function visibility(string $path): FileAttributes
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         return new FileAttributes($path);
     }
@@ -202,7 +203,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function mimeType(string $path): FileAttributes
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         return new FileAttributes(
             $path,
@@ -219,15 +220,15 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function lastModified(string $path): FileAttributes
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         try {
-            $response = $this->client->listContent($path, ['modified']);
+            $data = $this->client->listContent($path, ['modified']);
         } catch (BadRequestException $e) {
             throw UnableToRetrieveMetadata::lastModified($path, $e->getMessage());
         }
 
-        $timestamp = (isset($response['modified'])) ? strtotime($response['modified']) : null;
+        $timestamp = (isset($data['modified'])) ? strtotime($data['modified']) : null;
 
         return new FileAttributes(
             $path,
@@ -243,7 +244,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function fileSize(string $path): FileAttributes
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         try {
             $data = $this->client->listContent($path, ['size']);
@@ -264,7 +265,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function listContents(string $path, bool $deep = false): iterable
     {
-        $path = $this->pathNormalizer->normalizePath($path);
+        $path = $this->normalizer->normalizePath($path);
 
         foreach ($this->iterateFolderContents($path, $deep) as $entry) {
             $attributes = $this->normalizeResponse($entry);
@@ -284,8 +285,8 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function move(string $source, string $destination, Config $config): void
     {
-        $source = $this->pathNormalizer->normalizePath($source);
-        $destination = $this->pathNormalizer->normalizePath($destination);
+        $source = $this->normalizer->normalizePath($source);
+        $destination = $this->normalizer->normalizePath($destination);
 
         try {
             $this->client->move($source, $destination);
@@ -300,8 +301,8 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function copy(string $source, string $destination, Config $config): void
     {
-        $source = $this->pathNormalizer->normalizePath($source);
-        $destination = $this->pathNormalizer->normalizePath($destination);
+        $source = $this->normalizer->normalizePath($source);
+        $destination = $this->normalizer->normalizePath($destination);
 
         try {
             $this->client->copy($source, $destination);
