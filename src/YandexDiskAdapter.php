@@ -72,11 +72,13 @@ class YandexDiskAdapter implements FilesystemAdapter
      */
     public function write(string $path, string $contents, Config $config): void
     {
-        //        $contents = Utils::tryFopen($path, 'r');
-
         $path = $this->normalizer->normalizePath($path);
 
-        $this->writeStream($path, $contents, $config);
+        try {
+            $this->client->upload($path, $contents, true);
+        } catch (BadRequestException $e) {
+            throw UnableToWriteFile::atLocation($path, $e->getMessage(), $e);
+        }
     }
 
     /**
@@ -311,6 +313,12 @@ class YandexDiskAdapter implements FilesystemAdapter
         }
     }
 
+    /**
+     * @param $path
+     * @param $deep
+     * @return \Generator
+     * @throws GuzzleException
+     */
     protected function iterateFolderContents($path, $deep)
     {
         $attributes = [
@@ -327,6 +335,10 @@ class YandexDiskAdapter implements FilesystemAdapter
         yield from $data['_embedded']['items'];
     }
 
+    /**
+     * @param array $data
+     * @return StorageAttributes
+     */
     protected function normalizeResponse(array $data): StorageAttributes
     {
         // Normalize path by removing an extra prefix.
