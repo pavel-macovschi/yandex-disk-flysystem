@@ -313,13 +313,7 @@ class YandexDiskAdapter implements FilesystemAdapter
         }
     }
 
-    /**
-     * @param $path
-     * @param $deep
-     * @return \Generator
-     * @throws GuzzleException
-     */
-    protected function iterateFolderContents($path, $deep)
+    protected function iterateFolderContents(string $path, bool $deep): \Generator
     {
         $attributes = [
             '_embedded.items.path,
@@ -335,10 +329,6 @@ class YandexDiskAdapter implements FilesystemAdapter
         yield from $data['_embedded']['items'];
     }
 
-    /**
-     * @param array $data
-     * @return StorageAttributes
-     */
     protected function normalizeResponse(array $data): StorageAttributes
     {
         // Normalize path by removing an extra prefix.
