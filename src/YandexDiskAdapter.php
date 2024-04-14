@@ -2,7 +2,6 @@
 
 namespace ImpressiveWeb\Flysystem;
 
-use GuzzleHttp\Exception\GuzzleException;
 use ImpressiveWeb\YandexDisk\Client;
 use ImpressiveWeb\YandexDisk\Exception\BadRequestException;
 use GuzzleHttp\Psr7\Utils;
@@ -11,7 +10,6 @@ use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\FilesystemException;
-use League\Flysystem\InvalidVisibilityProvided;
 use League\Flysystem\StorageAttributes;
 use League\Flysystem\UnableToCheckFileExistence;
 use League\Flysystem\UnableToCopyFile;
@@ -153,7 +151,7 @@ class YandexDiskAdapter implements FilesystemAdapter
      * @throws UnableToRetrieveMetadata
      * @throws FilesystemException
      */
-    public function deleteDirectory(string $path): void
+    public function deleteDirectory(string $path, bool $destroy = false): void
     {
         $path = $this->normalizer->normalizePath($path);
 
@@ -227,7 +225,7 @@ class YandexDiskAdapter implements FilesystemAdapter
         try {
             $data = $this->client->listContent($path, ['modified']);
         } catch (BadRequestException $e) {
-            throw UnableToRetrieveMetadata::lastModified($path, $e->getMessage());
+            throw UnableToRetrieveMetadata::lastModified($path, $e->getMessage(), $e);
         }
 
         $timestamp = (isset($data['modified'])) ? strtotime($data['modified']) : null;
@@ -251,7 +249,7 @@ class YandexDiskAdapter implements FilesystemAdapter
         try {
             $data = $this->client->listContent($path, ['size']);
         } catch (BadRequestException $e) {
-            throw UnableToRetrieveMetadata::lastModified($path, $e->getMessage());
+            throw UnableToRetrieveMetadata::lastModified($path, $e->getMessage(), $e);
         }
 
         return new FileAttributes(

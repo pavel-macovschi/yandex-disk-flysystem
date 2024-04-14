@@ -28,7 +28,6 @@
         "phpstan/phpstan": "2.0.x-dev",
         "phpunit/phpunit": "*",
         "squizlabs/php_codesniffer": "4.0.x-dev",
-        "symfony/var-dumper": "7.1.x-dev", 
-        "league/flysystem-adapter-test-utilities": "*"
+        "symfony/var-dumper": "7.1.x-dev"
     }
 }
