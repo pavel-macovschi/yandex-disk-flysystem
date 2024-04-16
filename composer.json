@@ -8,6 +8,8 @@
       "impressiveweb",
       "flysystem",
       "flysystem adapter",
+      "filesystem",
+      "cloud filesystem",
       "yandex disk flysystem adapter"
     ],
     "authors": [
