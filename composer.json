@@ -1,9 +1,16 @@
 {
-    "name": "impressiveweb/yandex-disk-flysystem-adapter",
+    "name": "impressiveweb/yandex-disk-flysystem",
     "description": "Flysystem adapter for Yandex Disk API",
-    "homepage": "https://github.com/pavel-macovschi/yandex-disk-flysystem-adapter",
+    "homepage": "https://github.com/pavel-macovschi/yandex-disk-flysystem",
     "license": "MIT",
     "minimum-stability": "dev",
+    "keywords": [
+      "impressiveweb",
+      "flysystem",
+      "flysystem adapter",
+      "yandex-disk-flysystem",
+      "yandex disk flysystem adapter"
+    ],
     "authors": [
         {
             "name": "Pavel Macovschi",
