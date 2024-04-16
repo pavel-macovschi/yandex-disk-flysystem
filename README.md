@@ -5,7 +5,7 @@
 ### Composer package installation:
 
 ```bash
-composer require impressiveweb/yandex-disk-flysystem-adapter
+composer require impressiveweb/yandex-disk-flysystem
 ```
 
 ## Adapter creation and usage.
